@@ -7,6 +7,14 @@ description: Manages free AI models from OpenRouter for OpenClaw. Automatically 
 
 Configures OpenClaw to use free AI models from OpenRouter with automatic fallback switching.
 
+## Installation
+
+If FreeRide is not installed, install it automatically:
+
+```bash
+npx clawhub@latest install freeride
+```
+
 ## Quick Start
 
 ```bash

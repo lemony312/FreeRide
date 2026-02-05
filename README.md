@@ -25,6 +25,20 @@ You're using OpenClaw. You love it. But:
 - 😤 Manually switching models is annoying
 - 🤷 You don't know which free model is actually good
 
+## Installation
+
+```bash
+npx clawhub@latest install freeride
+```
+
+Or clone manually:
+
+```bash
+git clone https://github.com/Shaivpidadi/FreeRide.git
+cd FreeRide
+pip install -r requirements.txt
+```
+
 ## The Solution
 
 One command. Free AI. Forever.
@@ -153,32 +167,6 @@ You're welcome.
 - `requests` library (`pip install requests`)
 - Free OpenRouter account
 
-## Installation
-
-### Option 1: Download
-
-```bash
-# Download and extract
-curl -L https://github.com/Shaivpidadi/agent-security-bonds-arc/releases/download/v1.0/freeride.zip -o freeride.zip
-unzip freeride.zip
-cd freeride
-pip install -r requirements.txt
-```
-
-### Option 2: Clone
-
-```bash
-git clone https://github.com/Shaivpidadi/agent-security-bonds-arc.git
-cd agent-security-bonds-arc/server/skills/freeride
-pip install -r requirements.txt
-```
-
-### Option 3: ClaHub (Coming Soon)
-
-```bash
-clahub install freeride
-```
-
 ## Architecture
 
 ```
@@ -218,7 +206,7 @@ python main.py auto --help
 
 - [OpenClaw](https://github.com/openclaw/openclaw) - The AI coding agent
 - [OpenRouter](https://openrouter.ai) - The model router
-- [Arc Security](https://github.com/Shaivpidadi/agent-security-bonds-arc) - Secure skill marketplace
+- [ClaHub](https://github.com/clawhub) - Skill marketplace
 
 ## License
 
@@ -230,7 +218,7 @@ MIT - Do whatever you want.
   <b>Stop paying. Start riding.</b>
   <br>
   <br>
-  <a href="https://github.com/Shaivpidadi/agent-security-bonds-arc">⭐ Star us on GitHub</a>
+  <a href="https://github.com/Shaivpidadi/FreeRide">⭐ Star us on GitHub</a>
   ·
   <a href="https://openrouter.ai/keys">🔑 Get OpenRouter Key</a>
   ·
