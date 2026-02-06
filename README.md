@@ -28,7 +28,7 @@ You're using OpenClaw. You love it. But:
 ## Installation
 
 ```bash
-npx clawhub@latest install freeride
+npx clawhub@latest install free-ride
 ```
 
 Or clone manually:
