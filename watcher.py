@@ -187,7 +187,7 @@ def rotate_to_next_model(api_key: str, state: dict, reason: str = "manual"):
     fallbacks = []
 
     # Always add openrouter/free as first fallback
-    free_router = "openrouter/free:free"
+    free_router = "openrouter/free"
     fallbacks.append(free_router)
     config["agents"]["defaults"]["models"][free_router] = {}
 

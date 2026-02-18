@@ -218,13 +218,13 @@ def format_model_for_openclaw(model_id: str, with_provider_prefix: bool = True) 
 
     # Handle openrouter/free special case: "openrouter" is both the routing 
     # prefix OpenClaw adds AND the actual provider name in the API model ID.
-    # The API model ID is "openrouter/free", so:
-    #   - with prefix:    "openrouter/openrouter/free:free" (routing prefix + API ID)
-    #   - without prefix: "openrouter/free:free" (just the API ID)
+    # The API model ID is "openrouter/free" (no :free suffix — it's a router, not a free-tier model).
+    #   - with prefix:    "openrouter/openrouter/free" (routing prefix + API ID)
+    #   - without prefix: "openrouter/free" (just the API ID)
     if model_id in ("openrouter/free", "openrouter/free:free"):
         if with_provider_prefix:
-            return "openrouter/openrouter/free:free"
-        return "openrouter/free:free"
+            return "openrouter/openrouter/free"
+        return "openrouter/free"
 
     # Remove existing openrouter/ routing prefix if present to get the base API ID
     if base_id.startswith("openrouter/"):
@@ -328,7 +328,7 @@ def update_model_config(
 
             # Always add openrouter/free as first fallback (smart router)
             # Skip if it's being set as primary
-            free_router = "openrouter/free:free"
+            free_router = "openrouter/free"
             free_router_primary = format_model_for_openclaw("openrouter/free", with_provider_prefix=True)
             if formatted_primary != free_router_primary and formatted_for_list != free_router:
                 new_fallbacks.append(free_router)
@@ -666,7 +666,7 @@ def cmd_fallbacks(args):
     fallbacks = []
 
     # Always add openrouter/free as first fallback (smart router)
-    free_router = "openrouter/free:free"
+    free_router = "openrouter/free"
     free_router_primary = format_model_for_openclaw("openrouter/free", with_provider_prefix=True)
     if not current or current != free_router_primary:
         fallbacks.append(free_router)

@@ -25,20 +25,6 @@ You're using OpenClaw. You love it. But:
 - 😤 Manually switching models is annoying
 - 🤷 You don't know which free model is actually good
 
-## Installation
-
-```bash
-npx clawhub@latest install free-ride
-```
-
-Or clone manually:
-
-```bash
-git clone https://github.com/Shaivpidadi/FreeRide.git
-cd FreeRide
-pip install -r requirements.txt
-```
-
 ## The Solution
 
 One command. Free AI. Forever.
@@ -55,6 +41,16 @@ That's it. FreeRide:
 4. **Configures** smart fallbacks for when you hit rate limits
 5. **Preserves** your existing OpenClaw config
 
+## Installation
+
+```bash
+npx clawhub@latest install freeride
+cd ~/.openclaw/workspace/skills/free-ride
+pip install -e .
+```
+
+That's it. `freeride` and `freeride-watcher` are now available as global commands.
+
 ## Quick Start
 
 ### 1. Get a Free OpenRouter Key
@@ -69,6 +65,12 @@ No credit card. No trial. Actually free.
 export OPENROUTER_API_KEY="sk-or-v1-..."
 ```
 
+Or add it to your OpenClaw config:
+
+```bash
+openclaw config set env.OPENROUTER_API_KEY "sk-or-v1-..."
+```
+
 ### 3. Run FreeRide
 
 ```bash
@@ -77,19 +79,32 @@ freeride auto
 
 ### 4. Restart OpenClaw
 
+```bash
+openclaw gateway restart
+```
+
+### 5. Verify It Works
+
+Message your agent on WhatsApp/Telegram/Discord or the dashboard:
+
+```
+You:    /status
+Agent:  (shows the free model name + token count)
+```
+
 Done. You're now running on free AI with automatic fallbacks.
 
 ## What You Get
 
 ```
-Primary Model: nvidia/nemotron-3-nano-30b-a3b:free (256K context)
+Primary Model: openrouter/nvidia/nemotron-3-nano-30b-a3b:free (256K context)
 
 Fallbacks:
-  1. openrouter/free         ← Smart router (auto-picks best available)
-  2. qwen/qwen3-coder:free   ← Great for coding
-  3. stepfun/step-3.5:free   ← Fast responses
-  4. deepseek/deepseek:free  ← Strong reasoning
-  5. mistral/mistral:free    ← Reliable fallback
+  1. openrouter/free          ← Smart router (auto-picks best available)
+  2. qwen/qwen3-coder:free    ← Great for coding
+  3. stepfun/step-3.5:free    ← Fast responses
+  4. deepseek/deepseek:free   ← Strong reasoning
+  5. mistral/mistral:free     ← Reliable fallback
 ```
 
 When you hit a rate limit, OpenClaw automatically tries the next model. You keep working. No interruptions.
@@ -102,6 +117,8 @@ When you hit a rate limit, OpenClaw automatically tries the next model. You keep
 | `freeride list` | See all 30+ free models ranked |
 | `freeride switch <model>` | Use a specific model |
 | `freeride status` | Check your current setup |
+| `freeride fallbacks` | Update fallbacks only |
+| `freeride refresh` | Force refresh model cache |
 
 ### Pro Tips
 
@@ -117,6 +134,9 @@ freeride switch qwen3-coder
 
 # See what's available:
 freeride list -n 30
+
+# Always restart OpenClaw after changes:
+openclaw gateway restart
 ```
 
 ## How It Ranks Models
@@ -132,6 +152,51 @@ FreeRide scores each model (0-1) based on:
 
 The **smart fallback** `openrouter/free` is always first - it auto-selects based on what your request needs.
 
+## Testing with Your OpenClaw Agent
+
+After running `freeride auto` and `openclaw gateway restart`:
+
+```bash
+# Check OpenClaw sees the models
+openclaw models list
+
+# Validate config
+openclaw doctor --fix
+
+# Open the dashboard and chat
+openclaw dashboard
+# Or message your agent on WhatsApp/Telegram/Discord
+```
+
+Useful agent commands to verify:
+
+| Command | What it tells you |
+|---------|-------------------|
+| `/status` | Current model + token usage |
+| `/model` | Available models (your free models should be listed) |
+| `/new` | Start fresh session with the new model |
+
+## Watcher (Auto-Rotation)
+
+FreeRide includes a watcher daemon that monitors for rate limits and automatically rotates models:
+
+```bash
+# Run once (check + rotate if needed)
+freeride-watcher
+
+# Run as daemon (continuous monitoring)
+freeride-watcher --daemon
+
+# Force rotate to next model
+freeride-watcher --rotate
+
+# Check watcher status
+freeride-watcher --status
+
+# Clear rate limit cooldowns
+freeride-watcher --clear-cooldowns
+```
+
 ## FAQ
 
 **Is this actually free?**
@@ -144,11 +209,15 @@ That's the whole point. FreeRide configures multiple fallbacks. When one model r
 
 **Will it mess up my OpenClaw config?**
 
-No. FreeRide only touches the model settings. Your gateway, channels, plugins, workspace - all preserved.
+No. FreeRide only touches `agents.defaults.model` and `agents.defaults.models`. Your gateway, channels, plugins, workspace, customInstructions - all preserved.
 
 **Which models are free?**
 
 Run `freeride list` to see current availability. It changes, which is why FreeRide exists.
+
+**Do I need to restart OpenClaw after changes?**
+
+Yes. Run `openclaw gateway restart` after any FreeRide command that changes your config.
 
 ## The Math
 
@@ -162,10 +231,9 @@ You're welcome.
 
 ## Requirements
 
-- [OpenClaw](https://github.com/openclaw/openclaw) installed
+- [OpenClaw](https://github.com/openclaw/openclaw) installed (Node ≥22)
 - Python 3.8+
-- `requests` library (`pip install requests`)
-- Free OpenRouter account
+- Free OpenRouter account ([get key](https://openrouter.ai/keys))
 
 ## Architecture
 
@@ -184,6 +252,8 @@ You're welcome.
                      │ openclaw.json│
                      └──────┬───────┘
                             │
+                     openclaw gateway restart
+                            │
                             ▼
                      ┌──────────────┐
                      │  OpenClaw    │
@@ -196,17 +266,19 @@ You're welcome.
 Found a bug? Want a feature? PRs welcome.
 
 ```bash
-# Run tests
-python main.py list
-python main.py status
-python main.py auto --help
+cd ~/.openclaw/workspace/skills/free-ride
+
+# Test commands
+freeride list
+freeride status
+freeride auto --help
 ```
 
 ## Related Projects
 
 - [OpenClaw](https://github.com/openclaw/openclaw) - The AI coding agent
 - [OpenRouter](https://openrouter.ai) - The model router
-- [ClaHub](https://github.com/clawhub) - Skill marketplace
+- [ClawHub](https://github.com/clawhub) - Skill marketplace
 
 ## License
 

@@ -5,125 +5,87 @@ description: Manages free AI models from OpenRouter for OpenClaw. Automatically 
 
 # FreeRide - Free AI for OpenClaw
 
-Configures OpenClaw to use free AI models from OpenRouter with automatic fallback switching.
+## What This Skill Does
 
-## Installation
+Configures OpenClaw to use **free** AI models from OpenRouter. Sets the best free model as primary, adds ranked fallbacks so rate limits don't interrupt the user, and preserves existing config.
 
-If FreeRide is not installed, install it automatically:
+## Prerequisites
+
+Before running any FreeRide command, ensure:
+
+1. **OPENROUTER_API_KEY is set.** Check with `echo $OPENROUTER_API_KEY`. If empty, the user must get a free key at https://openrouter.ai/keys and set it:
+   ```bash
+   export OPENROUTER_API_KEY="sk-or-v1-..."
+   # Or persist it:
+   openclaw config set env.OPENROUTER_API_KEY "sk-or-v1-..."
+   ```
+
+2. **The `freeride` CLI is installed.** Check with `which freeride`. If not found:
+   ```bash
+   cd ~/.openclaw/workspace/skills/free-ride
+   pip install -e .
+   ```
+
+## Primary Workflow
+
+When the user wants free AI, run these steps in order:
 
 ```bash
-npx clawhub@latest install freeride
-```
-
-## Quick Start
-
-```bash
-# Set API key (free at openrouter.ai/keys)
-export OPENROUTER_API_KEY="sk-or-v1-..."
-
-# Auto-configure best model + fallbacks
+# Step 1: Configure best free model + fallbacks
 freeride auto
+
+# Step 2: Restart gateway so OpenClaw picks up the changes
+openclaw gateway restart
 ```
 
-## Commands
+That's it. The user now has free AI with automatic fallback switching.
 
-### `list` - View available models
+Verify by telling the user to send `/status` to check the active model.
+
+## Commands Reference
+
+| Command | When to use it |
+|---------|----------------|
+| `freeride auto` | User wants free AI set up (most common) |
+| `freeride auto -f` | User wants fallbacks but wants to keep their current primary model |
+| `freeride auto -c 10` | User wants more fallbacks (default is 5) |
+| `freeride list` | User wants to see available free models |
+| `freeride list -n 30` | User wants to see all free models |
+| `freeride switch <model>` | User wants a specific model (e.g. `freeride switch qwen3-coder`) |
+| `freeride switch <model> -f` | Add specific model as fallback only |
+| `freeride status` | Check current FreeRide configuration |
+| `freeride fallbacks` | Update only the fallback models |
+| `freeride refresh` | Force refresh the cached model list |
+
+**After any command that changes config, always run `openclaw gateway restart`.**
+
+## What It Writes to Config
+
+FreeRide updates only these keys in `~/.openclaw/openclaw.json`:
+
+- `agents.defaults.model.primary` — e.g. `openrouter/qwen/qwen3-coder:free`
+- `agents.defaults.model.fallbacks` — e.g. `["openrouter/free", "nvidia/nemotron:free", ...]`
+- `agents.defaults.models` — allowlist so `/model` command shows the free models
+
+Everything else (gateway, channels, plugins, env, customInstructions, named agents) is preserved.
+
+The first fallback is always `openrouter/free` — OpenRouter's smart router that auto-picks the best available model based on the request.
+
+## Watcher (Optional)
+
+For auto-rotation when rate limited, the user can run:
 
 ```bash
-freeride list              # Top 15 models
-freeride list -n 30        # More models
-freeride list --refresh    # Force API refresh
-```
-
-### `auto` - Auto-configure
-
-```bash
-freeride auto              # Best model + 5 fallbacks
-freeride auto -f           # Fallbacks only (keep current primary)
-freeride auto -c 10        # 10 fallbacks
-freeride auto --setup-auth # Also configure auth profile
-```
-
-### `switch` - Set specific model
-
-```bash
-freeride switch qwen3-coder         # Set as primary
-freeride switch deepseek -f         # Add to fallbacks only
-freeride switch nvidia/nemotron --no-fallbacks
-```
-
-### `status` - Check configuration
-
-```bash
-freeride status
-```
-
-### `fallbacks` - Update fallbacks only
-
-```bash
-freeride fallbacks         # 5 fallbacks
-freeride fallbacks -c 10   # 10 fallbacks
-```
-
-### `refresh` - Update model cache
-
-```bash
-freeride refresh
-```
-
-## Behavior
-
-**Primary model**: Best specific model (not router) for consistent responses.
-
-**First fallback**: Always `openrouter/free` - OpenRouter's smart router that auto-selects based on request features (vision, tools, etc.).
-
-**Additional fallbacks**: Ranked by quality score.
-
-**Config preservation**: Only updates model-related sections; preserves gateway, channels, plugins, etc.
-
-## Model Ranking
-
-Score (0-1) based on:
-- Context length (40%)
-- Capabilities (30%)
-- Recency (20%)
-- Provider trust (10%)
-
-## Flags
-
-| Flag | Commands | Description |
-|------|----------|-------------|
-| `-f` | switch, auto | Fallback only, keep primary |
-| `-c N` | auto, fallbacks | Number of fallbacks |
-| `--no-fallbacks` | switch | Skip fallback configuration |
-| `--setup-auth` | switch, auto | Add OpenRouter auth profile |
-| `-n N` | list | Models to display |
-| `-r` | list | Force refresh |
-
-## Config Output
-
-Updates `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "model": {
-        "primary": "openrouter/qwen/qwen3-coder:free",
-        "fallbacks": [
-          "openrouter/free:free",
-          "nvidia/nemotron-3-nano-30b-a3b:free"
-        ]
-      }
-    }
-  }
-}
+freeride-watcher --daemon    # Continuous monitoring
+freeride-watcher --rotate    # Force rotate now
+freeride-watcher --status    # Check rotation history
 ```
 
 ## Troubleshooting
 
-**"OPENROUTER_API_KEY not set"**: Export the key or add to shell profile.
-
-**Config not updating**: Check file permissions on `~/.openclaw/openclaw.json`.
-
-**Changes not taking effect**: Restart OpenClaw.
+| Problem | Fix |
+|---------|-----|
+| `freeride: command not found` | `cd ~/.openclaw/workspace/skills/free-ride && pip install -e .` |
+| `OPENROUTER_API_KEY not set` | User needs a key from https://openrouter.ai/keys |
+| Changes not taking effect | `openclaw gateway restart` then `/new` for fresh session |
+| Agent shows 0 tokens | Check `freeride status` — primary should be `openrouter/<provider>/<model>:free` |
