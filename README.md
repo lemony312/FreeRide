@@ -41,7 +41,26 @@ That's it. FreeRide:
 4. **Configures** smart fallbacks for when you hit rate limits
 5. **Preserves** your existing OpenClaw config
 
-## Installation
+## Quick Start (Docker)
+
+The easiest way to run FreeRide + OpenClaw with full isolation:
+
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/freeride.git
+cd freeride
+
+# Set your OpenRouter API key
+cp .env.example .env
+# Edit .env and add your key from https://openrouter.ai/keys
+
+# Run setup
+./setup.sh
+```
+
+That's it! Open the Control UI link printed at the end and start chatting.
+
+## Installation (Manual)
 
 ```bash
 npx clawhub@latest install freeride
@@ -51,7 +70,7 @@ pip install -e .
 
 That's it. `freeride` and `freeride-watcher` are now available as global commands.
 
-## Quick Start
+## Quick Start (Manual)
 
 ### 1. Get a Free OpenRouter Key
 

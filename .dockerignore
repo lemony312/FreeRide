@@ -1,0 +1,19 @@
+# Don't copy these into the Docker image
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+dist
+build
+.env
+*.log
+.DS_Store
+Thumbs.db
+
+# Docker files (no need to copy recursively)
+Dockerfile
+docker-compose.yml
+.dockerignore

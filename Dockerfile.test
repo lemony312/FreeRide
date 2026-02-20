@@ -1,0 +1,32 @@
+# FreeRide Test Container
+# Tests FreeRide CLI only (no full OpenClaw gateway)
+#
+# Usage:
+#   docker build -t freeride-test -f Dockerfile.test .
+#   docker run -it --rm -e OPENROUTER_API_KEY=sk-or-v1-xxx freeride-test freeride list
+
+FROM python:3.11-slim-bookworm
+
+LABEL description="FreeRide CLI test container - no host access"
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash freeride
+USER freeride
+WORKDIR /home/freeride
+
+# Copy FreeRide
+COPY --chown=freeride:freeride . /home/freeride/freeride/
+
+# Install FreeRide
+RUN pip install --user -e /home/freeride/freeride
+
+# Add to PATH
+ENV PATH="/home/freeride/.local/bin:$PATH"
+
+# Default: show help
+CMD ["freeride", "--help"]

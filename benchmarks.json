@@ -1,0 +1,85 @@
+{
+  "version": "2025-02",
+  "description": "Curated quality tiers based on LMSys Arena ELO, HuggingFace leaderboard, and community consensus",
+  "last_updated": "2025-02-19",
+  "tiers": {
+    "S": {
+      "score": 1.0,
+      "description": "Top-tier models with excellent benchmark performance",
+      "patterns": [
+        "deepseek/deepseek-r1",
+        "qwen/qwen3-235b",
+        "qwen/qwen3-coder",
+        "meta-llama/llama-3.3-70b"
+      ]
+    },
+    "A": {
+      "score": 0.8,
+      "description": "High-quality models with strong performance",
+      "patterns": [
+        "qwen/qwen3",
+        "nvidia/nemotron",
+        "mistralai/mistral-small",
+        "deepseek/deepseek"
+      ]
+    },
+    "B": {
+      "score": 0.6,
+      "description": "Good models suitable for most tasks",
+      "patterns": [
+        "meta-llama/llama",
+        "google/gemma",
+        "arcee-ai/trinity",
+        "mistralai/mistral"
+      ]
+    },
+    "C": {
+      "score": 0.4,
+      "description": "Functional models, may have limitations",
+      "patterns": [
+        "liquid/lfm",
+        "nousresearch",
+        "cognitivecomputations"
+      ]
+    }
+  },
+  "category_boosts": {
+    "coding": {
+      "description": "Models optimized for code generation and understanding",
+      "patterns": [
+        "coder",
+        "code",
+        "qwen/qwen3-coder",
+        "deepseek/deepseek-coder"
+      ],
+      "boost": 1.25
+    },
+    "reasoning": {
+      "description": "Models with enhanced reasoning/thinking capabilities",
+      "patterns": [
+        "thinking",
+        "r1",
+        "deepseek-r1",
+        "reasoning"
+      ],
+      "boost": 1.25
+    },
+    "vision": {
+      "description": "Models capable of processing images",
+      "patterns": [
+        "vl",
+        "vision",
+        "gemma-3n",
+        "multimodal"
+      ],
+      "boost": 1.5
+    }
+  },
+  "routers": {
+    "description": "Meta-routers that should be handled specially (not ranked as models)",
+    "patterns": [
+      "openrouter/free",
+      "openrouter/aurora"
+    ]
+  }
+}

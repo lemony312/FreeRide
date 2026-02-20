@@ -6,9 +6,10 @@ setup(
     description="Free AI for OpenClaw - Automatic free model management via OpenRouter",
     author="Shaishav Pidadi",
     url="https://github.com/Shaivpidadi/FreeRide",
-    py_modules=["main", "watcher"],
+    py_modules=["main", "watcher", "profiles"],
     install_requires=[
         "requests>=2.31.0",
+        "python-dotenv>=1.0.0",
     ],
     entry_points={
         "console_scripts": [

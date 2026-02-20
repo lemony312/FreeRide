@@ -1,0 +1,30 @@
+# Environment variables (contains API keys)
+.env
+!.env.example
+
+# Docker OpenClaw clone (created by setup.sh)
+.docker-openclaw/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
