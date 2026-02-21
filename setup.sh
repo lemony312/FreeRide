@@ -4,6 +4,9 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 echo "🚗 FreeRide Setup"
 echo "=================="
 echo ""
@@ -64,86 +67,120 @@ echo "✓ Installed FreeRide skill to ~/.openclaw"
 # Set up Docker environment
 cd .docker-openclaw
 
-if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
-        # Generate a random gateway token
-        GATEWAY_TOKEN=$(openssl rand -hex 32)
-        
-        # Create .env from example with actual values
-        cat > .env << EOF
+# Use existing token from openclaw.json if available, otherwise generate new one
+if [ -f ~/.openclaw/openclaw.json ]; then
+    EXISTING_TOKEN=$(grep -o '"token": "[^"]*"' ~/.openclaw/openclaw.json 2>/dev/null | cut -d'"' -f4)
+    if [ -n "$EXISTING_TOKEN" ]; then
+        OPENCLAW_GATEWAY_TOKEN="$EXISTING_TOKEN"
+        echo "✓ Using existing gateway token"
+    fi
+fi
+
+if [ -z "$OPENCLAW_GATEWAY_TOKEN" ]; then
+    OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
+    echo "✓ Generated new gateway token"
+fi
+
+# Load Brave API key if set
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    source "$SCRIPT_DIR/.env"
+fi
+
+# Create/update Docker .env
+cat > .env << EOF
 # OpenClaw Docker Configuration (auto-generated)
+OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
 OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-OPENCLAW_GATEWAY_TOKEN=${GATEWAY_TOKEN}
+BRAVE_API_KEY=${BRAVE_API_KEY:-}
 OPENCLAW_CONFIG_DIR=${HOME}/.openclaw
 OPENCLAW_WORKSPACE_DIR=${HOME}/.openclaw/workspace
 OPENCLAW_GATEWAY_PORT=18789
 OPENCLAW_BRIDGE_PORT=18790
 OPENCLAW_GATEWAY_BIND=lan
-OPENCLAW_IMAGE=docker-openclaw-openclaw:latest
+OPENCLAW_IMAGE=openclaw:local
 EOF
-        echo "✓ Created Docker .env with gateway token"
-    fi
+echo "✓ Created Docker .env"
+
+# Create minimal OpenClaw config if it doesn't exist
+if [ ! -f ~/.openclaw/openclaw.json ]; then
+    cat > ~/.openclaw/openclaw.json << JSONEOF
+{
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "openrouter/openrouter/free"
+      }
+    }
+  },
+  "env": {
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+  }
+}
+JSONEOF
+    echo "✓ Created OpenClaw config"
+else
+    echo "✓ OpenClaw config exists"
 fi
 
-# Build and start OpenClaw
+# Build Docker image
 echo ""
 echo "Building OpenClaw Docker image (this may take a few minutes)..."
-./docker-setup.sh 2>&1 | tail -20
+docker compose build 2>&1 | tail -10
 
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "⚠️  Build may have completed. Checking status..."
-fi
+# Start containers (skip interactive onboard - config already exists)
+echo ""
+echo "Starting OpenClaw..."
+docker compose up -d openclaw-gateway 2>&1
 
 # Wait for container to start
+echo "Waiting for gateway to start..."
 sleep 5
 
 # Check if running
 if docker ps | grep -q "openclaw-gateway"; then
-    echo ""
-    echo "✓ OpenClaw is running!"
+    echo "✓ OpenClaw gateway is running!"
 else
-    echo ""
-    echo "Starting OpenClaw..."
-    docker compose up -d 2>&1
-    sleep 5
+    echo "⚠️  Gateway may still be starting. Check with: docker compose logs -f"
 fi
-
-# Configure FreeRide
-echo ""
-echo "Configuring FreeRide..."
-cd ..
-source .env
-python3 main.py auto --profile coding 2>&1 || true
-
-# Restart gateway to apply config
-cd .docker-openclaw
-docker compose restart openclaw-gateway 2>&1
-sleep 3
 
 # Build Control UI
 echo ""
 echo "Building Control UI..."
-docker exec -u root -e CI=true docker-openclaw-openclaw-gateway-1 pnpm ui:build 2>&1 | tail -5 || true
+docker exec -u root -e CI=true docker-openclaw-openclaw-gateway-1 pnpm ui:build 2>&1 | tail -5 || echo "UI build will complete on first access"
 
-# Final restart
+# Restart to ensure everything is loaded
 docker compose restart openclaw-gateway 2>&1
 sleep 3
 
-# Get dashboard URL
-GATEWAY_TOKEN=$(grep "^OPENCLAW_GATEWAY_TOKEN=" .env | cut -d= -f2)
+# Configure FreeRide
+echo ""
+echo "Configuring FreeRide with best free model..."
+cd "$SCRIPT_DIR"
+source .env
+python3 main.py auto --profile coding 2>&1 || echo "FreeRide config will be done on first use"
+
+# Final restart to apply model config
+cd .docker-openclaw
+docker compose restart openclaw-gateway 2>&1
+sleep 2
 
 echo ""
 echo "=============================================="
 echo "🎉 FreeRide Setup Complete!"
 echo "=============================================="
 echo ""
-echo "Control UI: http://localhost:18789/#token=${GATEWAY_TOKEN}"
+echo "Control UI: http://localhost:18789/#token=${OPENCLAW_GATEWAY_TOKEN}"
 echo ""
 echo "Commands:"
-echo "  docker compose logs -f    # View logs"
-echo "  docker compose restart    # Restart"
-echo "  docker compose down       # Stop"
+echo "  cd .docker-openclaw && docker compose logs -f    # View logs"
+echo "  cd .docker-openclaw && docker compose restart    # Restart"
+echo "  cd .docker-openclaw && docker compose down       # Stop"
 echo ""
 echo "FreeRide Commands:"
 echo "  python3 main.py list      # List free models"

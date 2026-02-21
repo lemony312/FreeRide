@@ -20,6 +20,7 @@ configuring the gateway, and setting up FreeRide. Open the Control UI link it pr
 
 1. Docker Desktop installed and running
 2. OpenRouter API key (free at https://openrouter.ai/keys)
+3. (Optional) Brave Search API key for web search (https://brave.com/search/api/)
 
 ## Manual Setup
 
@@ -30,6 +31,9 @@ If you prefer to set things up manually:
 Create `.env` in the project root:
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-your-key-here
+
+# Optional: Enable web search
+BRAVE_API_KEY=your-brave-api-key-here
 ```
 
 ### 2. Run docker-setup.sh
@@ -115,6 +119,54 @@ It does NOT have access to your main filesystem.
 | "Control UI assets not found" | Run `docker exec -u root -e CI=true <container> pnpm ui:build` |
 | Container keeps restarting | Check logs: `docker logs <container>` |
 | Models not changing | Restart gateway after FreeRide commands |
+
+## Web Search
+
+OpenClaw supports web search through multiple providers:
+
+### Option 1: OpenRouter Web Search (Recommended)
+
+If you're using OpenRouter, enable web search in their plugins:
+
+1. Go to https://openrouter.ai/settings/plugins
+2. Enable the **Web Search** plugin
+3. This allows models to search the web directly through OpenRouter
+
+This is the easiest option if you're already using OpenRouter for your models.
+
+### Option 2: Brave Search API
+
+For dedicated web search with more control:
+
+1. Get an API key at https://brave.com/search/api/
+2. Add to your `.env`:
+   ```bash
+   BRAVE_API_KEY=your-key-here
+   ```
+3. Restart the container:
+   ```bash
+   docker compose down && docker compose up -d
+   ```
+
+**Note:** Brave's free tier has limited monthly queries. For heavy usage, consider adding credits to your account.
+
+### Option 3: Perplexity via OpenRouter
+
+Use Perplexity Sonar for AI-synthesized search results:
+
+1. Add to `~/.openclaw/openclaw.json`:
+   ```json
+   {
+     "tools": {
+       "web": {
+         "search": {
+           "provider": "perplexity"
+         }
+       }
+     }
+   }
+   ```
+2. Requires OpenRouter credits (not free tier)
 
 ## File Locations
 

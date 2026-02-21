@@ -1,6 +1,6 @@
 # 🎢 FreeRide
 
-### Stop paying for AI. Start riding free.
+### Your one-stop shop to play with ClawBot for FREE
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![OpenClaw Compatible](https://img.shields.io/badge/OpenClaw-Compatible-blue.svg)](https://github.com/openclaw/openclaw)
@@ -8,237 +8,198 @@
 
 ---
 
-**FreeRide** gives you unlimited free AI in [OpenClaw](https://github.com/openclaw/openclaw) by automatically managing OpenRouter's free models.
+**FreeRide** lets you run [OpenClaw](https://github.com/openclaw/openclaw) (ClawBot) completely free using OpenRouter's free AI models. No credit card. No trial period. Actually free.
 
 ```
 You: *hits rate limit*
 FreeRide: "I got you." *switches to next best model*
-You: *keeps coding*
+You: *keeps chatting*
 ```
 
-## The Problem
+## 🚀 Quick Start (5 Minutes)
 
-You're using OpenClaw. You love it. But:
+### What You Need
 
-- 💸 API costs add up fast
-- 🚫 Free models have rate limits
-- 😤 Manually switching models is annoying
-- 🤷 You don't know which free model is actually good
+| Account | Why | Link |
+|---------|-----|------|
+| **OpenRouter** (required) | Free AI models | [openrouter.ai/keys](https://openrouter.ai/keys) |
+| **Brave Search** (optional) | Web search capability | [brave.com/search/api](https://brave.com/search/api/) |
+| **Docker Desktop** (required) | Runs everything isolated | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop) |
 
-## The Solution
+### Step 1: Get Your Free OpenRouter Key
 
-One command. Free AI. Forever.
+1. Go to [openrouter.ai/keys](https://openrouter.ai/keys)
+2. Create an account (no credit card needed)
+3. Click "Create Key"
+4. Copy your key (starts with `sk-or-v1-...`)
 
-```bash
-freeride auto
-```
-
-That's it. FreeRide:
-
-1. **Finds** the 30+ free models on OpenRouter
-2. **Ranks** them by quality (context length, capabilities, speed)
-3. **Sets** the best one as your primary
-4. **Configures** smart fallbacks for when you hit rate limits
-5. **Preserves** your existing OpenClaw config
-
-## Quick Start (Docker)
-
-The easiest way to run FreeRide + OpenClaw with full isolation:
+### Step 2: Clone and Configure
 
 ```bash
-# Clone the repo
+# Clone this repo
 git clone https://github.com/yourusername/freeride.git
 cd freeride
 
-# Set your OpenRouter API key
+# Create your config file
 cp .env.example .env
-# Edit .env and add your key from https://openrouter.ai/keys
+```
 
-# Run setup
+Edit `.env` and paste your OpenRouter key:
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-your-key-here
+
+# Optional: Enable web search (get key at brave.com/search/api)
+BRAVE_API_KEY=your-brave-key-here
+```
+
+### Step 3: Run Setup
+
+```bash
 ./setup.sh
 ```
 
-That's it! Open the Control UI link printed at the end and start chatting.
+This takes about 2-3 minutes the first time. It will:
+- Build the Docker image
+- Configure OpenClaw with free models
+- Start the gateway
+- Print your Control UI link
 
-## Installation (Manual)
+### Step 4: Start Chatting!
+
+Open the **Control UI** link printed at the end:
+
+```
+http://localhost:18789/#token=your-token-here
+```
+
+That's it! You're now running ClawBot for free. 🎉
+
+---
+
+## 📱 What You Can Do
+
+Once running, you can:
+
+- **Chat** with your AI assistant in the Control UI
+- **Search the web** (if you enabled Brave Search)
+- **Run code** and use tools
+- **Connect channels** like WhatsApp, Telegram, Discord
+
+## ⚙️ Configuration Checklist
+
+| Setting | Location | Required? |
+|---------|----------|-----------|
+| OpenRouter API Key | `.env` file | ✅ Yes |
+| Brave Search API Key | `.env` file | ❌ Optional |
+| Web Search Plugin | [openrouter.ai/settings/plugins](https://openrouter.ai/settings/plugins) | ❌ Optional (alternative to Brave) |
+
+### Enable Web Search (Choose One)
+
+**Option A: OpenRouter Plugin (Easiest)**
+1. Go to [openrouter.ai/settings/plugins](https://openrouter.ai/settings/plugins)
+2. Enable the **Web Search** plugin
+3. Done - models can now search the web
+
+**Option B: Brave Search API**
+1. Get a key at [brave.com/search/api](https://brave.com/search/api/)
+2. Add `BRAVE_API_KEY=your-key` to `.env`
+3. Restart: `cd .docker-openclaw && docker compose restart`
+
+---
+
+## 🔧 Common Commands
+
+### Docker Commands (run from `.docker-openclaw/` folder)
 
 ```bash
-npx clawhub@latest install freeride
-cd ~/.openclaw/workspace/skills/free-ride
-pip install -e .
+cd .docker-openclaw
+
+# View logs
+docker compose logs -f
+
+# Restart
+docker compose restart openclaw-gateway
+
+# Stop everything
+docker compose down
+
+# Start again
+docker compose up -d
 ```
 
-That's it. `freeride` and `freeride-watcher` are now available as global commands.
-
-## Quick Start (Manual)
-
-### 1. Get a Free OpenRouter Key
-
-Go to [openrouter.ai/keys](https://openrouter.ai/keys) → Create account → Generate key
-
-No credit card. No trial. Actually free.
-
-### 2. Set Your Key
+### FreeRide Commands
 
 ```bash
-export OPENROUTER_API_KEY="sk-or-v1-..."
+# See all free models ranked by quality
+python3 main.py list
+
+# Auto-configure the best free model
+python3 main.py auto
+
+# Check current model status
+python3 main.py status
+
+# Use a specific model
+python3 main.py switch qwen3-coder
 ```
 
-Or add it to your OpenClaw config:
-
+**Important:** Always restart the gateway after changing models:
 ```bash
-openclaw config set env.OPENROUTER_API_KEY "sk-or-v1-..."
+cd .docker-openclaw && docker compose restart openclaw-gateway
 ```
 
-### 3. Run FreeRide
+---
 
-```bash
-freeride auto
-```
+## 🆓 How It Works
 
-### 4. Restart OpenClaw
+FreeRide uses [OpenRouter](https://openrouter.ai), which provides free tiers for 30+ AI models including:
 
-```bash
-openclaw gateway restart
-```
+- **Qwen3** - Great for coding
+- **Llama 3.3** - Strong general purpose
+- **DeepSeek** - Excellent reasoning
+- **Mistral** - Fast and reliable
 
-### 5. Verify It Works
+When you hit a rate limit on one model, OpenClaw automatically switches to the next best free model. You keep working without interruption.
 
-Message your agent on WhatsApp/Telegram/Discord or the dashboard:
-
-```
-You:    /status
-Agent:  (shows the free model name + token count)
-```
-
-Done. You're now running on free AI with automatic fallbacks.
-
-## What You Get
+### What You Get
 
 ```
-Primary Model: openrouter/nvidia/nemotron-3-nano-30b-a3b:free (256K context)
+Primary Model: openrouter/openrouter/free (auto-selects best)
 
 Fallbacks:
-  1. openrouter/free          ← Smart router (auto-picks best available)
-  2. qwen/qwen3-coder:free    ← Great for coding
-  3. stepfun/step-3.5:free    ← Fast responses
-  4. deepseek/deepseek:free   ← Strong reasoning
-  5. mistral/mistral:free     ← Reliable fallback
+  1. qwen/qwen3-coder:free      ← Great for coding
+  2. meta-llama/llama-3.3:free  ← Strong reasoning
+  3. deepseek/deepseek:free     ← Fast responses
+  4. mistral/mistral:free       ← Reliable fallback
 ```
 
-When you hit a rate limit, OpenClaw automatically tries the next model. You keep working. No interruptions.
+---
 
-## Commands
+## 🔍 Troubleshooting
 
-| Command | What it does |
-|---------|--------------|
-| `freeride auto` | Auto-configure best model + fallbacks |
-| `freeride list` | See all 30+ free models ranked |
-| `freeride switch <model>` | Use a specific model |
-| `freeride status` | Check your current setup |
-| `freeride fallbacks` | Update fallbacks only |
-| `freeride refresh` | Force refresh model cache |
+| Problem | Solution |
+|---------|----------|
+| "gateway token missing" | Use the full URL with `#token=...` from setup output |
+| "pairing required" | Run `docker exec -it docker-openclaw-openclaw-gateway-1 node dist/index.js configure` |
+| "Control UI not loading" | Run `docker exec -u root -e CI=true docker-openclaw-openclaw-gateway-1 pnpm ui:build` |
+| Rate limit errors | FreeRide auto-switches models, or run `python3 main.py auto` to refresh |
+| Web search not working | Check your Brave API key or enable OpenRouter web search plugin |
+| Container keeps restarting | Check logs: `docker logs docker-openclaw-openclaw-gateway-1` |
 
-### Pro Tips
+### Token Mismatch?
+
+If the Control UI says "token mismatch", the gateway token changed. Get the current token:
 
 ```bash
-# Already have a model you like? Just add fallbacks:
-freeride auto -f
-
-# Want more fallbacks for maximum uptime?
-freeride auto -c 10
-
-# Coding? Switch to the best coding model:
-freeride switch qwen3-coder
-
-# See what's available:
-freeride list -n 30
-
-# Always restart OpenClaw after changes:
-openclaw gateway restart
+grep "token" ~/.openclaw/openclaw.json
 ```
 
-## How It Ranks Models
+Use that token in your URL: `http://localhost:18789/#token=YOUR_TOKEN`
 
-FreeRide scores each model (0-1) based on:
+---
 
-| Factor | Weight | Why |
-|--------|--------|-----|
-| Context Length | 40% | Longer = handle bigger codebases |
-| Capabilities | 30% | Vision, tools, structured output |
-| Recency | 20% | Newer models = better performance |
-| Provider Trust | 10% | Google, Meta, NVIDIA, etc. |
-
-The **smart fallback** `openrouter/free` is always first - it auto-selects based on what your request needs.
-
-## Testing with Your OpenClaw Agent
-
-After running `freeride auto` and `openclaw gateway restart`:
-
-```bash
-# Check OpenClaw sees the models
-openclaw models list
-
-# Validate config
-openclaw doctor --fix
-
-# Open the dashboard and chat
-openclaw dashboard
-# Or message your agent on WhatsApp/Telegram/Discord
-```
-
-Useful agent commands to verify:
-
-| Command | What it tells you |
-|---------|-------------------|
-| `/status` | Current model + token usage |
-| `/model` | Available models (your free models should be listed) |
-| `/new` | Start fresh session with the new model |
-
-## Watcher (Auto-Rotation)
-
-FreeRide includes a watcher daemon that monitors for rate limits and automatically rotates models:
-
-```bash
-# Run once (check + rotate if needed)
-freeride-watcher
-
-# Run as daemon (continuous monitoring)
-freeride-watcher --daemon
-
-# Force rotate to next model
-freeride-watcher --rotate
-
-# Check watcher status
-freeride-watcher --status
-
-# Clear rate limit cooldowns
-freeride-watcher --clear-cooldowns
-```
-
-## FAQ
-
-**Is this actually free?**
-
-Yes. OpenRouter provides free tiers for many models. You just need an account (no credit card).
-
-**What about rate limits?**
-
-That's the whole point. FreeRide configures multiple fallbacks. When one model rate-limits you, OpenClaw automatically switches to the next.
-
-**Will it mess up my OpenClaw config?**
-
-No. FreeRide only touches `agents.defaults.model` and `agents.defaults.models`. Your gateway, channels, plugins, workspace, customInstructions - all preserved.
-
-**Which models are free?**
-
-Run `freeride list` to see current availability. It changes, which is why FreeRide exists.
-
-**Do I need to restart OpenClaw after changes?**
-
-Yes. Run `openclaw gateway restart` after any FreeRide command that changes your config.
-
-## The Math
+## 💰 The Math
 
 | Scenario | Monthly Cost |
 |----------|--------------|
@@ -248,70 +209,63 @@ Yes. Run `openclaw gateway restart` after any FreeRide command that changes your
 
 You're welcome.
 
-## Requirements
+---
 
-- [OpenClaw](https://github.com/openclaw/openclaw) installed (Node ≥22)
-- Python 3.8+
-- Free OpenRouter account ([get key](https://openrouter.ai/keys))
+## 📁 File Locations
 
-## Architecture
+| What | Where |
+|------|-------|
+| Main config | `~/.openclaw/openclaw.json` |
+| Environment vars | `.env` and `.docker-openclaw/.env` |
+| Docker files | `.docker-openclaw/` |
+| FreeRide skill | `~/.openclaw/main.py` |
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  You         │ ──→ │  FreeRide    │ ──→ │  OpenRouter API  │
-│  "freeride   │     │              │     │  (30+ free       │
-│   auto"      │     │  • Fetch     │     │   models)        │
-└──────────────┘     │  • Rank      │     └──────────────────┘
-                     │  • Configure │
-                     └──────┬───────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │ ~/.openclaw/ │
-                     │ openclaw.json│
-                     └──────┬───────┘
-                            │
-                     openclaw gateway restart
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │  OpenClaw    │
-                     │  (free AI!)  │
-                     └──────────────┘
-```
+---
 
-## Contributing
+## ❓ FAQ
+
+**Is this actually free?**
+
+Yes. OpenRouter provides free tiers for many models. No credit card required.
+
+**What about rate limits?**
+
+That's the whole point of FreeRide. When you hit a rate limit, OpenClaw automatically tries the next model in your fallback list.
+
+**Will it mess up my config?**
+
+No. FreeRide only touches model settings. Your other OpenClaw config is preserved.
+
+**Can I use web search?**
+
+Yes! Either enable the OpenRouter web search plugin, or add a Brave Search API key to your `.env`.
+
+**Do I need to restart after changes?**
+
+Yes. Run `docker compose restart openclaw-gateway` after changing models or config.
+
+---
+
+## 🤝 Contributing
 
 Found a bug? Want a feature? PRs welcome.
 
-```bash
-cd ~/.openclaw/workspace/skills/free-ride
+---
 
-# Test commands
-freeride list
-freeride status
-freeride auto --help
-```
-
-## Related Projects
+## 📚 Related
 
 - [OpenClaw](https://github.com/openclaw/openclaw) - The AI coding agent
-- [OpenRouter](https://openrouter.ai) - The model router
-- [ClawHub](https://github.com/clawhub) - Skill marketplace
-
-## License
-
-MIT - Do whatever you want.
+- [OpenRouter](https://openrouter.ai) - Free AI model router
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) - Container runtime
 
 ---
 
 <p align="center">
-  <b>Stop paying. Start riding.</b>
-  <br>
-  <br>
-  <a href="https://github.com/Shaivpidadi/FreeRide">⭐ Star us on GitHub</a>
+  <b>Stop paying. Start riding free.</b>
+  <br><br>
+  <a href="https://github.com/yourusername/freeride">⭐ Star on GitHub</a>
   ·
-  <a href="https://openrouter.ai/keys">🔑 Get OpenRouter Key</a>
+  <a href="https://openrouter.ai/keys">🔑 Get Free OpenRouter Key</a>
   ·
-  <a href="https://github.com/openclaw/openclaw">🦞 Install OpenClaw</a>
+  <a href="https://github.com/openclaw/openclaw">🦞 Learn about OpenClaw</a>
 </p>
